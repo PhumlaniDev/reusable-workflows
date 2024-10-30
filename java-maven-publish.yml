@@ -1,0 +1,24 @@
+name: Publish Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  publish_nexus:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Deploy Maven Artifacts to GitHub Packages
+        if: github.ref != 'refs/heads/develop'
+        run: mvn deploy -DskipTests --settings .github/settings.xml
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
