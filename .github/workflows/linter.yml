@@ -1,7 +1,7 @@
 name: Lint code
 
 permissions:
-  content: read
+  contents: read
 
 on: [push, pull_request, workflow_dispatch]
 
