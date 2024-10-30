@@ -1,5 +1,10 @@
 name: Setup Workflow
 
+permissions:
+  contents: read
+  issues: read
+
+
 on:
   workflow_call:
     inputs:
@@ -11,7 +16,8 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cache-key: ${{ steps.cache-dependencies.outputs.cache-key }}
+      cache-hit: ${{ steps.cache-dependencies.outputs.cache-hit }}
+      cache-key: ${{ input.cache-hit }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4

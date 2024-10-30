@@ -1,5 +1,10 @@
 name: Build, Test and Analyze Workflow
 
+permissions:
+  contents: read
+  issues: read
+
+
 on:
   workflow_call:
 
