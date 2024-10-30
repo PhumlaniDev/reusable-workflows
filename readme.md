@@ -1,5 +1,7 @@
 # Reusable Workflows Repository
 
+[![Lint code](https://github.com/PhumlaniDev/reusable-workflows/actions/workflows/linter.yml/badge.svg)](https://github.com/PhumlaniDev/reusable-workflows/actions/workflows/linter.yml)
+
 ## Overview
 
 This repository contains a collection of reusable GitHub Actions workflows designed to streamline CI/CD processes across multiple projects. By encapsulating common tasks into reusable workflows, you can reduce duplication, improve consistency, and simplify your CI/CD pipeline management.
