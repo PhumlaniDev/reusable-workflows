@@ -7,9 +7,10 @@ permissions:
 
 on:
   workflow_call:
-    cache-key:
-      description: "The cache key for Maven dependencies"
-      value: ${{ jobs.setup.outputs.cache-key }}  # Explicitly define the output
+    outputs:
+      cache-key:
+        description: "The cache key for Maven dependencies"
+        value: ${{ jobs.setup.outputs.cache-key }}  # Explicitly define the output
 
 jobs:
   setup:
