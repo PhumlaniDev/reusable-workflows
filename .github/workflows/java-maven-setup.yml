@@ -7,8 +7,8 @@ permissions:
 on:
   workflow_call:
     outputs:
-      cache-key:
-        value: ${{ steps.cache-dependencies.outputs.cache-key }}
+      cache-hit: ${{ steps.cache-dependencies.outputs.cache-hit }}
+      cache-key: ${{ inputs.cache-hit }}
 
 jobs:
   setup:
