@@ -2,15 +2,15 @@ name: Setup Workflow
 
 permissions:
   contents: read
-  actions: read
+  issues: read
+
 
 on:
   workflow_call:
-    outputs:
+    inputs:
       cache-hit:
-        value: ${{ steps.cache-dependencies.outputs.cache-hit }}
-      cache-key:
-        value: ${{ inputs.cache-hit }}
+        required: true
+        type: string
 
 jobs:
   setup:
@@ -33,3 +33,5 @@ jobs:
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-
