@@ -16,7 +16,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cache-key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+      cache-key: ${{ steps.cache-dependencies.outputs.cache-key }}  # Store cache key manually
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -33,6 +33,7 @@ jobs:
 #        run: echo "CACHE_KEY=${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_ENV"  # Generate cache key
 
       - name: Cache Maven dependencies
+        id: cache-dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
