@@ -1,5 +1,10 @@
 name: Build, Test and Analyze Workflow
 
+permissions:
+  contents: read
+  actions: read
+
+
 on:
   workflow_call:
     inputs:
@@ -55,7 +60,7 @@ jobs:
         env:
           env:
             GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
-            SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ input.database_name }}
+            SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ inputs.database_name }}
             SPRING_DATASOURCE_USERNAME: postgres
             SPRING_DATASOURCE_PASSWORD: postgres
             JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
@@ -65,21 +70,21 @@ jobs:
       - name: Run Unit Tests
         run: mvn --batch-mode test -Dspring.profiles.active=test
         env:
-          SPRING_DATASOURCE_URL: jdbc:h2:mem:${{ input.test_database_name }}
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:${{ inputs.test_database_name }}
           SPRING_DATASOURCE_USERNAME: test
           SPRING_DATASOURCE_PASSWORD: test
           JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
 
       - name: Build and Tag Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ input.project_name }}:${{ github.run_number }} .
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ input.project_name }}:${{ github.run_number }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ input.project_name }}:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} .
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       - name: Push Docker Image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ input.project_name }}:${{ github.run_number }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ input.project_name }}:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
 
