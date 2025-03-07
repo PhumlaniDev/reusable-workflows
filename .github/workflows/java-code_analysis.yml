@@ -8,6 +8,10 @@ permissions:
 on:
   workflow_call:
     inputs:
+      cache-key:
+        description: 'Sonar cache key'
+        required: true
+        type: string
       project_key:
         description: 'SonarQube project key'
         required: true
@@ -15,10 +19,13 @@ on:
     secrets:
       SONAR_TOKEN:
         required: true
+        type: string
       GH_PAT:
         required: false
+        type: string
       JASYPT_ENCRYPTOR_PASSWORD:
         required: false
+        type: string
 
 jobs:
   code_analysis:

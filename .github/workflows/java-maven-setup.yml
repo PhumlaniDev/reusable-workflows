@@ -1,11 +1,15 @@
 name: Setup Workflow
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   workflow_call:
     outputs:
       cache-key:
         description: 'Cache key for Maven dependencies'
-        required: true
+        value: ${{ steps.cache-dependencies.outputs.cache-hit }}
 
 jobs:
   setup:

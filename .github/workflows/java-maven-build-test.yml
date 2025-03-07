@@ -11,15 +11,19 @@ on:
       cache-key:
         description: 'Maven cache key'
         required: true
+        type: string
       project_name:
         description: 'Name of the project'
         required: true
+        type: string
       database_name:
         description: 'Name of the database'
         required: true
+        type: string
       test_database_name:
         description: 'Name of the test database'
         required: true
+        type: string
 
 jobs:
   build:
@@ -58,14 +62,13 @@ jobs:
       - name: Build with Maven
         run: mvn --batch-mode clean install -Dspring.profiles.active=local --settings .github/settings.xml
         env:
-          env:
-            GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
-            SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ inputs.database_name }}
-            SPRING_DATASOURCE_USERNAME: postgres
-            SPRING_DATASOURCE_PASSWORD: postgres
-            JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
-            GH_PAT: ${{ secrets.GH_PAT }}
-            GH_USERNAME: ${{ secrets.GH_USERNAME }}
+          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ inputs.database_name }}
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+          JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
 
       - name: Run Unit Tests
         run: mvn --batch-mode test -Dspring.profiles.active=test
