@@ -1,25 +1,21 @@
 name: Lint Workflow
 
-permissions:
-  contents: read
-  issues: read
-
-
 on:
   workflow_call:
 
 jobs:
   lint:
+    name: Lint Code
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          fetch-depth: 0
 
-      - name: Run Lint
-        run: mvn checkstyle:check
+      - name: Lint Java Code
+        uses: super-linter/super-linter/slim@7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_JAVA: false
