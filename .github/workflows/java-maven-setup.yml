@@ -7,16 +7,12 @@ permissions:
 
 on:
   workflow_call:
-    inputs:
-      cache-hit:
-        required: true
-        type: string
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cache-key: ${{ steps.cache-dependencies.outputs.cache-hit }}
+      cache-key: ${{ steps.cache-dependencies.outputs.cache-key }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
