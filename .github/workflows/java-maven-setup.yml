@@ -16,7 +16,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cache-key: ${{ steps.export-cache-key.outputs.cache-key }}  # Store cache key manually
+      cache-key: ${{ steps.cache-dependencies.outputs.cache-primary-key }}  # Store cache key manually
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -26,20 +26,20 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+          cache: 'maven'  # Cache Maven dependencies
 
-      - name: Define Cache Key
-        id: generate-cache-key
-        run: echo "CACHE_KEY=${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_ENV"  # Generate cache key
+#      - name: Define Cache Key
+#        id: generate-cache-key
+#        run: echo "CACHE_KEY=${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_ENV"  # Generate cache key
 
       - name: Cache Maven dependencies
         id: cache-dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ env.CACHE_KEY }}
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-
 
-      - name: Export Cache Key
-        id: export-cache-key
-        run: echo "cache-key=${{ env.CACHE_KEY }}" >> "$GITHUB_OUTPUT"  # Store cache key
+      - name: Install Dependencies
+        run: mvn -B dependency:resolve dependency:resolve-plugins

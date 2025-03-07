@@ -48,11 +48,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore Maven cache
+      - name: Restore Maven Dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ inputs.cache-key }}
+          key: maven-${{ runner.os }}-${{ needs.setup.outputs.cache-key }}
+          restore-keys: |
+            maven-${{ runner.os }}-
 
       - name: Copy Maven settings
         run: |
@@ -90,4 +92,3 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
-
