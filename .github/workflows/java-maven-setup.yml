@@ -7,12 +7,15 @@ permissions:
 
 on:
   workflow_call:
+    cache-key:
+      description: "The cache key for Maven dependencies"
+      value: ${{ jobs.setup.outputs.cache-key }}  # Explicitly define the output
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cache-key: ${{ steps.cache-dependencies.outputs.cache-key }}
+      cache-key: ${{ steps.export-cache-key.outputs.cache-key }}  # Store cache key manually
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -23,11 +26,19 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Define Cache Key
+        id: generate-cache-key
+        run: echo "CACHE_KEY=${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_ENV"  # Generate cache key
+
       - name: Cache Maven dependencies
         id: cache-dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ env.CACHE_KEY }}
           restore-keys: |
             ${{ runner.os }}-
+
+      - name: Export Cache Key
+        id: export-cache-key
+        run: echo "cache-key=${{ env.CACHE_KEY }}" >> "$GITHUB_OUTPUT"  # Store cache key
