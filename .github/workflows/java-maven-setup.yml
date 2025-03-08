@@ -30,7 +30,11 @@ jobs:
 
       - name: Generate Cache Key
         id: generate-cache-key
-        run: echo "cache_key=maven-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_ENV"  # Generate cache key
+        run: |
+          cache_key="maven-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_ENV"  # Generate cache key
+          echo "generated Cache Key: $cache_key"  # Debug cache key
+          echo "cache_key=$cache_key" >> "$GITHUB_ENV"  # Set cache key as environment variable
+          echo "::set-output name=cache_key::$cache_key"  # Set cache key as output
 
       - name: Debug Generated Cache Key
         run: | 
