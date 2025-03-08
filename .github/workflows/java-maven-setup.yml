@@ -34,7 +34,7 @@ jobs:
 
       - name: Debug Generated Cache Key
         run: |
-          echo "Generated Cache Key: ${{ env.cache_key }}
+          echo "Generated Cache Key: ${{ env.cache_key }}"
 
 
       - name: Cache Maven dependencies
