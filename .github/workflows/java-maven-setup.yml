@@ -32,6 +32,11 @@ jobs:
         id: generate-cache-key
         run: echo "cache_key=maven-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_ENV"  # Generate cache key
 
+      - name: Debug Generated Cache Key
+        run: |
+          echo "Generated Cache Key: ${{ steps.generate-cache-key.outputs.cache_key }}"
+
+
       - name: Cache Maven dependencies
         id: cache-dependencies
         uses: actions/cache@v4
