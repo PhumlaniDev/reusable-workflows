@@ -52,6 +52,9 @@ jobs:
         run: |
           echo "Received Cache Key: ${{ inputs.cache-key }}"
 
+      - name: Set Default Cache Key if Missing
+        if: ${{ inputs.cache-key == '' || inputs.cache-key == null }}
+        run: echo "cache-key=maven-default-key" >> "$GITHUB_ENV"
 
       - name: Restore Cached Maven Dependencies
         uses: actions/cache@v4
