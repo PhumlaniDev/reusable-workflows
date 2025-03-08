@@ -48,7 +48,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore Maven Dependencies
+      - name: Restore Cached Maven Dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
