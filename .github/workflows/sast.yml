@@ -96,7 +96,8 @@ jobs:
         run: |
           mvn --batch-mode verify \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Pcoverage,test \
+            -Pcoverage \
+            -Dspring.profiles.active=test \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.sarif.reportPaths=target/sonar/report.sarif
