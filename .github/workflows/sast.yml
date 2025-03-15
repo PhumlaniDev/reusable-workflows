@@ -4,14 +4,15 @@ on:
   workflow_dispatch:
   workflow_call:
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 jobs:
   SAST-CodeQL:
     name: Build and SAST CodeQL
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
 
     strategy:
       fail-fast: false
@@ -110,10 +111,6 @@ jobs:
     name: SAST SpotBugs
     needs: [SAST-CodeQL]
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -144,10 +141,6 @@ jobs:
     name: SAST Semgrep
     # If you are self-hosting, change the following `runs-on` value:
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
     container:
       # A Docker image with Semgrep installed. Do not change this.
       image: returntocorp/semgrep
