@@ -3,6 +3,11 @@ name: Dependency Scanning (SCA)
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      project_name:
+        description: "Name of the project"
+        required: false
+        type: string
 
 permissions:
   actions: read
