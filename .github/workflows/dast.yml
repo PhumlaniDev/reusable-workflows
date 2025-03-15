@@ -1,18 +1,13 @@
-name: 50 DAST Scan Docker Image
+name: Dynamic Application Security Testing (DAST)
 on:
   workflow_dispatch:
-    inputs:
-      image-tag:
-        type: string
-        description: 'The name of the docker image to scan'
-        required: true
-
   workflow_call:
-    inputs:
-      image-tag:
-        type: string
-        description: 'The name of the docker image to scan'
-        required: true
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 env:
   # used for docker
   REGISTRY: ghcr.io
@@ -30,10 +25,12 @@ jobs:
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker rm tech-hive-store | true && docker run -d -p 8080:8080 --name tech-hive-store ${{ env.IMAGE_TAG }}
+          docker rm tech-hive-store | true && docker run -d -p 8080:8080 --name tech-hive-store \
+          ${{ secrets.DOCKERHUB_USERNAME }}/tech-hive-store:latest
 
       - name: Wait for container to start
-        run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080)" != "200" ]]; do sleep 5; done' || false
+        run: timeout 300 bash -c "while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080)" \
+              != "200" ]]; do sleep 5; done" || false
 
       - name: Test container
         run: curl -s localhost:8080
