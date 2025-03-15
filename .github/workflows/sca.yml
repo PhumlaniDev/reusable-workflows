@@ -65,3 +65,5 @@ jobs:
   vulnerability-scan:
     name: Security Scans
     uses: PhumlaniDev/reusable-workflows/.github/workflows/java-maven-vulnerability_scan.yml@main
+    with:
+      project_name: 'tech-hive-store'
