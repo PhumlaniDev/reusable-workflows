@@ -8,16 +8,15 @@ on:
         description: "Name of the project"
         required: false
         type: string
-    workflow_call:
-      secrets:
-        DOCKERHUB_USERNAME:
-          required: true
-        DOCKERHUB_PASSWORD:
-          required: true
-        GITHUB_TOKEN:
-          required: true
-        SNYK_TOKEN:
-          required: true
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_PASSWORD:
+        required: true
+      GITHUB_TOKEN:
+        required: true
+      SNYK_TOKEN:
+        required: true
 
 permissions:
   actions: read
