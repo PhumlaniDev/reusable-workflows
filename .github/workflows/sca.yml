@@ -13,8 +13,6 @@ on:
         required: true
       DOCKERHUB_PASSWORD:
         required: true
-      GITHUB_TOKEN:
-        required: true
       SNYK_TOKEN:
         required: true
 
