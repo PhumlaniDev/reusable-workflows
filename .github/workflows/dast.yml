@@ -23,9 +23,11 @@ jobs:
     steps:
       - name: Log in to Docker Hub
         run: |
-          echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker rm tech-hive-store | true && docker run -d -p 8080:8080 --name tech-hive-store \
-          ${{ secrets.DOCKERHUB_USERNAME }}/tech-hive-store:latest
+          if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" && -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]]; then
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          else
+            echo "❌ Docker credentials missing!" && exit 1
+          fi
 
       - name: Wait for container to start
         run: timeout 300 bash -c "while [[ \"$(curl -s -o /dev/null -w '%{http_code}' localhost:8080)\" != \"200\" ]]; \
@@ -50,7 +52,11 @@ jobs:
           name: DAST_Report.html
           path: report_html.html
 
-      - name: stop docker
+      - name: Stop Docker
         if: always()
         run: |
-          docker stop demoApp && docker rm demoApp && docker container prune --force && docker image prune --force
+          if docker ps -a --format '{{.Names}}' | grep -q "tech-hive-store"; then
+            docker stop tech-hive-store && docker rm tech-hive-store
+          fi
+          docker container prune --force
+          docker image prune --force

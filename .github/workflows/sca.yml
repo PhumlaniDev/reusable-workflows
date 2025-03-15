@@ -50,7 +50,7 @@ jobs:
         uses: redhat-actions/crda@v1.2
         with:
           manifest_file: ${{ matrix.manifest_file }}
-          snyk_token: ${{ secrets.OUR_SNYK_KEY }}
+          snyk_token: ${{ secrets.SNYK_TOKEN }}  # 🔥 Uses the stored secret
           fail_on: never
 
       - name: Print JSON analysis report
