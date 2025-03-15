@@ -31,12 +31,25 @@ jobs:
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login \
           -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+      - name: Start Application Container
+        run: |
+          docker run -d -p 8080:8080 --name tech-hive-store ${{ secrets.DOCKERHUB_USERNAME }}/tech-hive-store:latest
+          sleep 5  # Give it time to initialize
+          docker logs tech-hive-store  # Check logs for errors
+
+      - name: Check running containers
+        run: docker ps -a
+
       - name: Wait for container to start
         run: |
-          timeout 300 bash -c "while [[ \"$(curl -s -o /dev/null \
-          -w '%{http_code}' localhost:8080)\" != \"200\" ]]; \
-          do sleep 5; done" || false
-
+          for i in {1..60}; do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' localhost:8080)
+            echo "Attempt $i: HTTP Status: $STATUS"
+            if [ "$STATUS" == "200" ]; then exit 0; fi
+            sleep 5
+          done
+          echo "❌ Application did not start in time!" && exit 1
+      
 
       - name: Test container
         run: curl -s localhost:8080

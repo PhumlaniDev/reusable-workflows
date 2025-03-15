@@ -79,3 +79,6 @@ jobs:
     uses: PhumlaniDev/reusable-workflows/.github/workflows/java-maven-vulnerability_scan.yml@main
     with:
       project_name: 'tech-hive-store'
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
