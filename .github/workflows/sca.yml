@@ -64,4 +64,4 @@ jobs:
 
   vulnerability-scan:
     name: Security Scans
-    uses: PhumlaniDev/reusable-workflows/blob/main/.github/workflows/java-maven-vulnerability_scan.yml
+    uses: PhumlaniDev/reusable-workflows/.github/workflows/java-maven-vulnerability_scan.yml@main

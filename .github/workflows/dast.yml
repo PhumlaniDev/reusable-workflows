@@ -9,9 +9,8 @@ permissions:
   security-events: write
 
 env:
-  # used for docker
-  REGISTRY: ghcr.io
-  IMAGE_TAG: ${{ inputs.image-tag || github.event.inputs.image-tag }}
+  IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/tech-hive-store:latest
+
 
 jobs:
   dast-scan:
@@ -29,8 +28,9 @@ jobs:
           ${{ secrets.DOCKERHUB_USERNAME }}/tech-hive-store:latest
 
       - name: Wait for container to start
-        run: timeout 300 bash -c "while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080)" \
-              != "200" ]]; do sleep 5; done" || false
+        run: timeout 300 bash -c "while [[ \"$(curl -s -o /dev/null -w '%{http_code}' localhost:8080)\" != \"200\" ]]; \
+          do sleep 5; done" || false
+
 
       - name: Test container
         run: curl -s localhost:8080
