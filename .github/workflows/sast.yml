@@ -4,6 +4,11 @@ name: Static Code Analysis (SAST)
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      SONAR_URL:
+        required: true
 
 permissions:
   actions: read
