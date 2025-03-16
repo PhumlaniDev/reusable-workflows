@@ -106,9 +106,9 @@ jobs:
       - name: Check Coverage Threshold
         run: |
           COVERAGE=$(mvn org.jacoco:jacoco-maven-plugin:report | grep -oP '(?<=<counter type="LINE" missed="\d+" covered="\d+" >)[^<]+')
-          echo "Coverage: $COVERAGE%"
-          if [ $(echo "$COVERAGE < 85" | bc) -eq 1 ]; then
-            echo "❌ Code coverage is below 85% ($COVERAGE%)"
+          echo "Coverage: ${COVERAGE}%"
+          if [ "$(echo "${COVERAGE} < 85" | bc)" -eq 1 ]; then
+            echo "❌ Code coverage is below 85% (${COVERAGE}%)"
             exit 1
           fi
           echo "✅ Code coverage is sufficient!"
