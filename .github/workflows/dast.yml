@@ -16,8 +16,8 @@ permissions:
 
 env:
   IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/tech-hive-store:latest
-  APP_PORT: 9500
-  HEALTH_ENDPOINT: http://localhost:$APP_PORT/acuator/health
+  APP_PORT: 8080
+  HEALTH_ENDPOINT: http://localhost:${{ env.APP_PORT }}/actuator/health
 
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Start Application Container
         run: |
-          docker run -d -p 8080:8080 --name tech-hive-store \
+          docker run -d -p ${{ env.APP_PORT }}:${{ env.APP_PORT }} --name tech-hive-store \
           ${{ secrets.DOCKERHUB_USERNAME }}/tech-hive-store:latest
           sleep 5  # Give it time to initialize
           docker logs tech-hive-store  # Check logs for errors
@@ -60,7 +60,7 @@ jobs:
         with:
           docker_name: 'owasp/zap2docker-stable'
           token: ${{ secrets.GITHUB_TOKEN }}
-          target: 'http://localhost:$APP_PORT'
+          target: 'http://localhost:${{ env.APP_PORT }}'
           cmd_options: '-a -j -l WARN -z "-addoninstallall" '
           allow_issue_writing: true
 
