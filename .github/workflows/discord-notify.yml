@@ -1,0 +1,41 @@
+name: Discord Notification
+
+on:
+  workflow_call:
+    inputs:
+      status:
+        required: true
+        type: string
+      title:
+        required: true
+        type: string
+      description:
+        required: true
+        type: string
+      color:
+        required: false
+        type: string
+        default: '7506394' # Blue
+    secrets:
+      DISCORD_WEBHOOK:
+        required: true
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification with Embed
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "username": "GitHub Actions",
+              "embeds": [{
+                "title": "${{ inputs.title }}",
+                "description": "${{ inputs.description }}",
+                "color": ${{ inputs.color }},
+                "footer": { "text": "Repository: ${{ github.repository }}" },
+                "timestamp": "'$(date --utc +%Y-%m-%dT%H:%M:%SZ)'"
+              }]
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK }}
