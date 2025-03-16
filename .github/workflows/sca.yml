@@ -52,17 +52,46 @@ jobs:
           github_pat: ${{ github.token }}
           crda: "latest"
 
-      - name: SCA (CRDA) Scan
+      - name: Force DNS to Google
+        run: |
+          echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
+
+      - name: Test Internet Connectivity
+        run: |
+          curl -v https://gw.api.openshift.io/user || echo "Failed to connect"
+
+      - name: SCA (CRDA) Scan with Retry
         id: scan
-        uses: redhat-actions/crda@v1.2
-        with:
-          manifest_file: ${{ matrix.manifest_file }}
-          snyk_token: ${{ secrets.SNYK_TOKEN }}  # 🔥 Uses the stored secret
-          fail_on: never
+        run: |
+          MAX_RETRIES=3
+          COUNT=0
+          SUCCESS=false
+                
+          while [[ $COUNT -lt $MAX_RETRIES ]]; do
+            echo "Attempt $((COUNT+1)) of $MAX_RETRIES"
+            crda analyse --manifest-file ${{ matrix.manifest_file }} --report-output crda-report.json --json --snyk-token ${{ secrets.SNYK_TOKEN }} || true
+            EXIT_CODE=$?
+                
+            if [ $EXIT_CODE -eq 0 ]; then
+              SUCCESS=true
+              break
+            fi
+                
+            COUNT=$((COUNT+1))
+            echo "Retrying in 10 seconds..."
+            sleep 10
+          done
+                
+          if [ "$SUCCESS" = false ]; then
+            echo "CRDA scan failed after $MAX_RETRIES attempts"
+            exit 1
+          fi
+                
+          echo "CRDA scan completed successfully"
 
       - name: Print JSON analysis report
-        if: ${{ always() && steps.scan.outputs.crda_report_json }}
-        run: cat ${{ steps.scan.outputs.crda_report_json }}
+        if: ${{ always() && steps.scan.conclusion == 'success' }}
+        run: cat crda-report.json || echo "No report found"
 
       - name: Print SARIF analysis report
         if: ${{ always() && steps.scan.outputs.crda_report_sarif }}
