@@ -97,10 +97,10 @@ jobs:
           SONAR_URL: ${{ secrets.SONAR_URL }}
         run: |
           mvn sonar:sonar \
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+            -Dsonar.projectKey="${{ secrets.SONAR_PROJECT_KEY }}" \
             -Dsonar.projectName='Tech-Hive-Store' \
-            -Dsonar.host.url=$SONAR_URL \
-            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.host.url="$SONAR_URL" \
+            -Dsonar.login="$SONAR_TOKEN" \
             -Dsonar.sarif.reportPaths=target/sonar/report.sarif
 
       - name: Check Coverage Threshold
