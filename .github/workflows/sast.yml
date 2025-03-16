@@ -91,15 +91,27 @@ jobs:
         run: |
           mvn --batch-mode clean verify -Pcoverage
 
-      - name: Run SonarCloud Analysis
+      - name: Run SonarCloud Analysis (With SARIF Output)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_URL: ${{ secrets.SONAR_URL }}
         run: |
-          mvn --batch-mode \
-            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn sonar:sonar \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
-            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.projectName='Tech-Hive-Store' \
+            -Dsonar.host.url=$SONAR_URL \
+            -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.sarif.reportPaths=target/sonar/report.sarif
+
+      - name: Check Coverage Threshold
+        run: |
+          COVERAGE=$(mvn org.jacoco:jacoco-maven-plugin:report | grep -oP '(?<=<counter type="LINE" missed="\d+" covered="\d+" >)[^<]+')
+          echo "Coverage: $COVERAGE%"
+          if [ $(echo "$COVERAGE < 85" | bc) -eq 1 ]; then
+            echo "❌ Code coverage is below 85% ($COVERAGE%)"
+            exit 1
+          fi
+          echo "✅ Code coverage is sufficient!"
 
       - name: Upload SARIF report to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
