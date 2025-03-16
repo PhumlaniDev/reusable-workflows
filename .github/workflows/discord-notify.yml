@@ -1,5 +1,9 @@
 name: Discord Notification
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   workflow_call:
     inputs:
@@ -33,9 +37,9 @@ jobs:
               "embeds": [{
                 "title": "${{ inputs.title }}",
                 "description": "${{ inputs.description }}",
-                "color": ${{ inputs.color }},
+                "color": '"${{ inputs.color }}"',
                 "footer": { "text": "Repository: ${{ github.repository }}" },
-                "timestamp": "'$(date --utc +%Y-%m-%dT%H:%M:%SZ)'"
+                "timestamp": "'"$(date --utc +%Y-%m-%dT%H:%M:%SZ)"'"
               }]
             }' \
             ${{ secrets.DISCORD_WEBHOOK }}
