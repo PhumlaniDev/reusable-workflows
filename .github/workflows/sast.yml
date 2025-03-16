@@ -79,6 +79,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -91,17 +93,12 @@ jobs:
         run: |
           mvn --batch-mode clean verify -Pcoverage
 
+
       - name: Run SonarCloud Analysis (With SARIF Output)
+        uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_URL: ${{ secrets.SONAR_URL }}
-        run: |
-          mvn sonar:sonar \
-            -Dsonar.projectKey="${{ secrets.SONAR_PROJECT_KEY }}" \
-            -Dsonar.projectName='Tech-Hive-Store' \
-            -Dsonar.host.url="$SONAR_URL" \
-            -Dsonar.login="$SONAR_TOKEN" \
-            -Dsonar.sarif.reportPaths=target/sonar/report.sarif
 
       - name: Check Coverage Threshold
         run: |
