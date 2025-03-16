@@ -16,6 +16,8 @@ permissions:
 
 env:
   IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/tech-hive-store:latest
+  APP_PORT: 9500
+  HEALTH_ENDPOINT: http://localhost:$APP_PORT/acuator/health
 
 
 jobs:
@@ -38,40 +40,43 @@ jobs:
       - name: Check running containers
         run: docker ps -a
 
-      - name: Wait for container to start
+      - name: Wait for container to Become Healthy
         run: |
+          echo "Checking application health endpoint: ${{ env.HEALTH_ENDPOINT }}"
           for i in {1..60}; do
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' localhost:8080)
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' ${{ env.HEALTH_ENDPOINT }})
             echo "Attempt $i: HTTP Status: $STATUS"
-            if [ "$STATUS" == "200" ]; then exit 0; fi
-            sleep 5
+            if [ "$STATUS" == "200" ]; then
+              echo "✅ Application is up!"
+              curl -s ${{ env.HEALTH_ENDPOINT }}
+              exit 0
+            fi
+            sleep 10
           done
-          echo "❌ Application did not start in time!" && exit 1
-      
-
-      - name: Test container
-        run: curl -s localhost:8080
+          echo "❌ Application did not start or health endpoint unavailable!" && exit 1
 
       - name: Run ZAP OWASP full scan
         uses: zaproxy/action-full-scan@v0.12.0
         with:
           docker_name: 'owasp/zap2docker-stable'
           token: ${{ secrets.GITHUB_TOKEN }}
-          target: 'http://localhost:8080'
+          target: 'http://localhost:$APP_PORT'
           cmd_options: '-a -j -l WARN -z "-addoninstallall" '
           allow_issue_writing: true
 
-      - name: Upload html report
+      - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
           name: DAST_Report.html
-          path: report_html.html
+          path: owasp-zap-report.html
 
-      - name: Stop Docker
+      - name: Stop and Cleanup Docker
         if: always()
         run: |
+          echo "Stopping and removing application container..."
           if docker ps -a --format '{{.Names}}' | grep -q "tech-hive-store"; then
             docker stop tech-hive-store && docker rm tech-hive-store
           fi
+          echo "Pruning unused containers and images..."
           docker container prune --force
           docker image prune --force
