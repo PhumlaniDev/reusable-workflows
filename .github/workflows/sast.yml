@@ -119,10 +119,14 @@ jobs:
 
       - name: Check Coverage Threshold
         run: |
-          COVERAGE=$(mvn org.jacoco:jacoco-maven-plugin:report | grep -oP '(?<=<counter type="LINE" missed="\d+" covered="\d+" >)[^<]+')
-          echo "Coverage: ${COVERAGE}%"
-          if [ "$(echo "${COVERAGE} < 85" | bc)" -eq 1 ]; then
-            echo "❌ Code coverage is below 85% (${COVERAGE}%)"
+          sudo apt-get install -y libxml2-utils
+          COVERAGE=$(xmllint --xpath "string(//report/counter[@type='LINE']/@covered)" target/site/jacoco/jacoco.xml)
+          MISSED=$(xmllint --xpath "string(//report/counter[@type='LINE']/@missed)" target/site/jacoco/jacoco.xml)
+          TOTAL=$((COVERAGE + MISSED))
+          PERCENT=$(awk "BEGIN { printf \"%.2f\", ($COVERAGE/$TOTAL)*100 }")
+          echo "Coverage: ${PERCENT}%"
+          if (( $(echo "$PERCENT < 85" | bc -l) )); then
+            echo "❌ Code coverage is below 85% (${PERCENT}%)"
             exit 1
           fi
           echo "✅ Code coverage is sufficient!"
