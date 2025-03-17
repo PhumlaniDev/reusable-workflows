@@ -31,18 +31,19 @@ jobs:
 
       - name: Run Application Container
         run: |
-          docker pull ${{ env.IMAGE_TAG }}
+          docker pull "${{ env.IMAGE_TAG }}"
           docker run -d --name tech-hive-store -p 8080:8080 \
             -e SPRING_PROFILES_ACTIVE=develop \
-            ${{ env.IMAGE_TAG }}
+            "${{ env.IMAGE_TAG }}"
 
           # Wait until health check passes
           echo "Waiting for app to be healthy..."
           for i in {1..30}; do
-            if curl -s ${HEALTH_ENDPOINT} | grep -q 'UP'; then
+            if curl -s "${HEALTH_ENDPOINT}" | grep -q 'UP'; then
               echo "App is healthy!"
               break
             fi
+            echo "Retrying... Attempt $i"
             sleep 5
           done
 
