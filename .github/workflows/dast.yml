@@ -19,7 +19,6 @@ env:
   APP_PORT: 8080
   HEALTH_ENDPOINT: http://localhost:$APP_PORT/actuator/health
 
-
 jobs:
   dast-scan:
     name: DAST Scan
@@ -34,9 +33,8 @@ jobs:
         uses: zaproxy/action-full-scan@v0.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
-          target: 'https://www.zaproxy.org/'
-          rules_file_name: '.zap/rules.tsv'
+          docker_name: "ghcr.io/zaproxy/zaproxy:stable"
+          target: "https://www.zaproxy.org/"
           cmd_options: '-a -j -l WARN -z "-addoninstallall" '
           allow_issue_writing: true
 
