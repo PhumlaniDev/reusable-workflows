@@ -102,6 +102,11 @@ jobs:
         run: |
           mvn --batch-mode clean verify -Pcoverage
 
+      - name: Debug Secrets (for testing purposes only!)
+        run: |
+          echo "SONAR_PROJECT_KEY=${{ secrets.SONAR_PROJECT_KEY }}"
+          echo "SONAR_ORGANIZATION=${{ secrets.SONAR_ORGANIZATION }}"
+
       - name: Run SonarCloud Analysis (With SARIF Output)
         uses: SonarSource/sonarqube-scan-action@v4
         env:
