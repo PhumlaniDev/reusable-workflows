@@ -131,11 +131,6 @@ jobs:
 #          fi
 #          echo "✅ Code coverage is sufficient!"
 
-      - name: Upload SARIF report to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: target/sonar/report.sarif
-
   spotbugs:
     name: SAST SpotBugs
     needs: [SAST-CodeQL]
