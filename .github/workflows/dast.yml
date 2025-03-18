@@ -41,7 +41,8 @@ jobs:
       - run: docker rm -f tech-hive-store | true && docker run -d --name tech-hive-store -p 8080:8080 ${{ env.IMAGE_TAG }}
 
       - name: Wait for the app to start
-        run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' ${{ env.HEALTH_ENDPOINT }})" != "200" ]]; do sleep 5; done'
+        run: |
+          timeout 300 bash -c "while [[ \"\$(curl -s -o /dev/null -w '%{http_code}' ${{ env.HEALTH_ENDPOINT }})\" != \"200\" ]]; do sleep 5; done"
 
       - name: Test Container
         run: curl -s ${{ env.HEALTH_ENDPOINT }}
