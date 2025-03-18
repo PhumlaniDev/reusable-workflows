@@ -38,15 +38,17 @@ jobs:
 
           # Wait until health check passes
           echo "Waiting for app to be healthy..."
+          healthy=false
           for i in {1..30}; do
             if curl -s "${HEALTH_ENDPOINT}" | grep -q 'UP'; then
-              echo "App is healthy!"
+              echo "✅ App is healthy!"
+              healthy=true
               break
             fi
             echo "Retrying... Attempt $i"
             sleep 5
           done
-          
+  
           if [ "$healthy" = false ]; then
             echo "❌ App failed to become healthy after 30 attempts!"
             echo "Dumping container logs for debugging:"
