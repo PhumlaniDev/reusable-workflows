@@ -29,14 +29,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      DISCORD_TITLE: ${{ inputs.title }}
+      DISCORD_DESCRIPTION: ${{ inputs.description }}
+      DISCORD_COLOR: ${{ inputs.color }}
     steps:
       - name: Send Discord Notification with Embed
         run: |
           jq -n \
             --arg username "GitHub Actions" \
-            --arg title "${{ inputs.title }}" \
-            --arg description "${{ inputs.description }}" \
-            --arg color "${{ inputs.color }}" \
+            --arg title "$DISCORD_TITLE" \
+            --arg description "$DISCORD_DESCRIPTION" \
+            --arg color "$DISCORD_COLOR" \
             --arg repo "${{ github.repository }}" \
             --arg timestamp "$(date --utc +%Y-%m-%dT%H:%M:%SZ)" \
             '{
