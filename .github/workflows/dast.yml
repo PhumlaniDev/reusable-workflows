@@ -46,6 +46,13 @@ jobs:
             echo "Retrying... Attempt $i"
             sleep 5
           done
+          
+          if [ "$healthy" = false ]; then
+            echo "❌ App failed to become healthy after 30 attempts!"
+            echo "Dumping container logs for debugging:"
+            docker logs tech-hive-store
+            exit 1
+          fi
 
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.12.0
