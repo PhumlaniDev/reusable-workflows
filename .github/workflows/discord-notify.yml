@@ -30,16 +30,14 @@ jobs:
     steps:
       - name: Send Discord Notification with Embed
         run: |
-          curl -H "Content-Type: application/json" \
-          -X POST \
-          -d "$(jq -n \
-          --arg username "GitHub Actions" \
-          --arg title "${{ inputs.title }}" \
-          --arg description "${{ inputs.description }}" \
-          --arg color "${{ inputs.color }}" \
-          --arg repo "${{ github.repository }}" \
-          --arg timestamp "$(date --utc +%Y-%m-%dT%H:%M:%SZ)" \
-          '{
+          jq -n \
+            --arg username "GitHub Actions" \
+            --arg title "${{ inputs.title }}" \
+            --arg description "${{ inputs.description }}" \
+            --arg color "${{ inputs.color }}" \
+            --arg repo "${{ github.repository }}" \
+            --arg timestamp "$(date --utc +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
               username: $username,
               embeds: [{
                 title: $title,
@@ -48,6 +46,4 @@ jobs:
                 footer: { text: "Repository: \($repo)" },
                 timestamp: $timestamp
               }]
-            }'
-          )" \
-          ${{ secrets.DISCORD_WEBHOOK }}
+            }' | curl -H "Content-Type: application/json" -X POST -d @- ${{ secrets.DISCORD_WEBHOOK }}
