@@ -21,7 +21,7 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: hub.docker.com
+  REGISTRY: docker.io
   IMAGE_TAG: >-
     ${{ inputs.image-tag != '' && inputs.image-tag || format('{0}/tech-hive-store:latest', secrets.DOCKERHUB_USERNAME) }}
   APP_PORT: 8080
