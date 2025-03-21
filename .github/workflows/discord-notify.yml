@@ -2,6 +2,7 @@ name: Discord Notification
 
 permissions:
   contents: read
+  pull-requests: read
   actions: read
 
 on:
