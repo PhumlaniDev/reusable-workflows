@@ -39,11 +39,11 @@ jobs:
       - name: Checkout action
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           cache: 'maven'
 
       - name: Install SCA tool (CRDA)
@@ -108,7 +108,7 @@ jobs:
     name: Security Scans
     uses: PhumlaniDev/reusable-workflows/.github/workflows/java-maven-vulnerability_scan.yml@main
     with:
-      project_name: 'tech-hive-store'
+      project_name: ${{ inputs.project_name }}
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}

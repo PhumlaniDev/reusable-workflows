@@ -5,8 +5,12 @@ on:
 
   workflow_call:
     inputs:
+      project_name:
+        description: "Name of the project"
+        required: true
+        type: string
       image-tag:
-        description: 'The name of the docker image to scan'
+        description: "The name of the docker image to scan"
         required: true
         type: string
     secrets:
@@ -23,7 +27,7 @@ permissions:
 env:
   REGISTRY: docker.io
   IMAGE_TAG: >-
-    ${{ inputs.image-tag != '' && inputs.image-tag || format('{0}/tech-hive-store:latest', secrets.DOCKERHUB_USERNAME) }}
+    ${{ inputs.image-tag != '' && inputs.image-tag || format('{0}/${{ env.IMAGE_TAG }}:latest', secrets.DOCKERHUB_USERNAME) }}
   APP_PORT: 8080
   HEALTH_ENDPOINT: http://localhost:$APP_PORT/actuator/health
 
@@ -38,7 +42,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - run: docker rm -f tech-hive-store | true && docker run -d --name tech-hive-store -p 8080:8080 ${{ env.IMAGE_TAG }}
+      - run: docker rm -f ${{ env.IMAGE_TAG }} | true && docker run -d --name ${{ env.IMAGE_TAG }} -p 8080:8080 ${{ env.IMAGE_TAG }}
 
       - name: Wait for the app to start
         run: |
