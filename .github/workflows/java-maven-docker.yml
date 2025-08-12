@@ -11,6 +11,10 @@ on:
       DOCKERHUB_USERNAME: { required: true }
       DOCKERHUB_PASSWORD: { required: true }
 
+permissions:
+  contents: read # needed to checkout code
+  packages: write # needed for pushing Docker images to GHCR or registry
+
 jobs:
   docker:
     runs-on: ubuntu-latest
