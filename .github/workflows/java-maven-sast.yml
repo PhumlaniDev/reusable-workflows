@@ -35,11 +35,11 @@ jobs:
         with:
           name: maven-target
 
-      - name: Build Maven Project
-        uses: github/codeql-action/analyze@v3
-
       - name: Package Maven
         run: mvn -DskipTests package
+
+      - name: Build Maven Project
+        uses: github/codeql-action/analyze@v3
 
   sonar:
     runs-on: ubuntu-latest
@@ -80,7 +80,7 @@ jobs:
       - name: Run SpotBugs
         uses: jmservera/spotbugs-github-action@v0.1.0-alpha
         with:
-          packages: com.example.-
+          packages: com.example.*
           target: ./target
           dependenciesPath: ~/.m2
           basePath: src/main/java
