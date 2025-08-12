@@ -5,100 +5,61 @@ permissions:
   contents: read
   actions: read
 
-
 on:
   workflow_call:
-    inputs:
-      cache-key:
-        description: 'Maven cache key'
+    secrets:
+      MAVEN_SETTINGS_XML:
         required: true
-        type: string
-      project_name:
-        description: 'Name of the project'
+      JASYPT_ENCRYPTOR_PASSWORD:
         required: true
-        type: string
-      database_name:
-        description: 'Name of the database'
-        required: true
-        type: string
-      test_database_name:
-        description: 'Name of the test database'
-        required: true
-        type: string
 
 jobs:
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16.0
+        image: postgres:16
         ports:
           - 5432:5432
         env:
-          POSTGRES_DB: tech_hive_db
+          POSTGRES_DB: inventory_db
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Debug Received Cache Key
-        run: |
-          echo "Received Cache Key: ${{ inputs.cache-key }}"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
 
-      - name: Set Default Cache Key if Missing
-        if: ${{ inputs.cache-key == '' || inputs.cache-key == null }}
-        run: echo "cache-key=maven-default-key" >> "$GITHUB_ENV"
-
-      - name: Restore Cached Maven Dependencies
+      - name: Cache Maven Repo
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ inputs.cache-key || env.cache-key }}
-          restore-keys: |
-              maven-${{ runner.os }}-
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
 
-      - name: Copy Maven settings
+      - name: Setup Maven settings.xml
         run: |
           mkdir -p ~/.m2
-          cp .github/settings.xml ~/.m2/settings.xml
+          echo "${{ secrets.MAVEN_SETTINGS_XML }}" > ~/.m2/settings.xml
 
-      - name: Build with Maven
-        run: mvn --batch-mode clean install -Dspring.profiles.active=local --settings .github/settings.xml
+      - name: Build & Run Tests
+        run: mvn --batch-mode clean verify -Pcoverage -Dspring.profiles.active=test
         env:
-          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ inputs.database_name }}
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
-          JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
-          GH_PAT: ${{ secrets.GH_PAT }}
-          GH_USERNAME: ${{ secrets.GH_USERNAME }}
-
-      - name: Run Unit Tests
-        run: mvn --batch-mode test -Dspring.profiles.active=test
-        env:
-          SPRING_DATASOURCE_URL: jdbc:h2:mem:${{ inputs.test_database_name }}
-          SPRING_DATASOURCE_USERNAME: test
-          SPRING_DATASOURCE_PASSWORD: test
           JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
 
-      - name: Build and Tag Docker Image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} .
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} \
-          ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
-
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-      - name: Push Docker Image
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
+      - name: Upload Maven Target
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-target
+          path: target

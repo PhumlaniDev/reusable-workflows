@@ -1,0 +1,39 @@
+name: Docker Build & Push
+
+on:
+  workflow_call:
+    inputs:
+      project_name:
+        description: "Name of the project"
+        required: true
+        type: string
+    secrets:
+      DOCKERHUB_USERNAME: { required: true }
+      DOCKERHUB_PASSWORD: { required: true }
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Maven Target
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-target
+
+      - name: Run Docker build and push
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} .
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
+          echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
+
+      - name: Save image as artifact
+        run: docker save my-app:${{ github.run_number }} -o built-image.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: built-image
+          path: built-image.tar

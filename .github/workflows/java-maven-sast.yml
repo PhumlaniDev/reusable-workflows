@@ -1,0 +1,99 @@
+name: Static Code Analysis (SAST)
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      SONAR_URL:
+        required: true
+      SONAR_PROJECT_KEY:
+        required: true
+      SONAR_ORGANIZATION:
+        required: true
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  codeql:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+
+      - name: Download Maven Target
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-target
+
+      - name: Build Maven Project
+        uses: github/codeql-action/analyze@v3
+
+      - name: Package Maven
+        run: mvn -DskipTests package
+
+  sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Download Maven Target
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-target
+
+      - name: Run SonarQube Analysis
+        run: mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONAR_URL }} \
+          -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
+          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+
+  spotbugs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Maven Target
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-target
+
+      - name: Run SpotBugs
+        uses: jmservera/spotbugs-github-action@v0.1.0-alpha
+        with:
+          packages: com.example.-
+          target: ./target
+          dependenciesPath: ~/.m2
+          basePath: src/main/java
+
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: semgrep ci -v -o results.sarif --sarif || true
+        env:
+          SEMGREP_RULES: p/security-audit p/owasp-top-ten
