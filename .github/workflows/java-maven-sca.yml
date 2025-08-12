@@ -41,17 +41,8 @@ jobs:
   vulnerability_scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Load built image from artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: built-image
-          path: .
-
-      - name: Load Docker image
-        run: docker load < built-image.tar
+      - name: Pull image
+        run: docker pull ${{ inputs.image_tag }}
 
       - name: Run Trivy vulnerability scanner (SARIF)
         uses: aquasecurity/trivy-action@0.32.0

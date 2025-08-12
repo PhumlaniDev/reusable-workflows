@@ -18,6 +18,8 @@ permissions:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -35,9 +37,5 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
 
-      - name: Save image as artifact
-        run: docker save ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} -o built-image.tar
-      - uses: actions/upload-artifact@v4
-        with:
-          name: built-image
-          path: built-image.tar
+      - id: meta
+        run: echo "tags=ghcr.io/${{ github.repository }}/${{ inputs.project_name }}:${{ github.sha }}" >> $GITHUB_OUTPUT
