@@ -64,16 +64,21 @@ jobs:
         run: |
           echo "Image tag is: ${{ inputs.image_tag }}"
 
+      - name: Debug Trivy Scan
+        run: |
+          echo "Attempting to scan image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}"
+          docker images
+          trivy image --format sarif --output trivy-results.sarif --ignore-unfixed --vuln-type os,library --severity CRITICAL,HIGH ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} || echo "Trivy scan failed"
+
       - name: Run Trivy vulnerability scanner (SARIF)
         uses: aquasecurity/trivy-action@0.32.0
         with:
-          image-ref: ${{ inputs.image_tag }}
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
           format: sarif
           output: trivy-results.sarif
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH
-        continue-on-error: true
 
       - name: Check if Trivy SARIF file exists
         run: ls -la ./trivy-results.sarif

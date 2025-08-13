@@ -40,4 +40,4 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:latest
 
       - id: meta
-        run: echo "tags=ghcr.io/${{ github.repository }}/${{ inputs.project_name }}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+        run: echo "tags=${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}" >> "$GITHUB_OUTPUT"
