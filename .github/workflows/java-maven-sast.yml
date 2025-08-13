@@ -52,6 +52,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for accurate analysis
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -92,6 +94,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for accurate analysis
 
       - name: Download Maven Target
         uses: actions/download-artifact@v4
@@ -113,6 +117,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for accurate analysis
 
       - name: Run Semgrep
         run: semgrep ci -v -o results.sarif --sarif || true

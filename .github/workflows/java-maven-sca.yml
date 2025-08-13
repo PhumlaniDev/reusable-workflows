@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for accurate analysis
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/maven@master
