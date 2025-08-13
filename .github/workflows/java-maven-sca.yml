@@ -63,8 +63,6 @@ jobs:
       - name: Set Image Tag
         run: |
           echo "Image tag is: ${{ inputs.image_tag }}"
-      
-      
 
       - name: Run Trivy vulnerability scanner (SARIF)
         uses: aquasecurity/trivy-action@0.32.0
