@@ -83,7 +83,7 @@ jobs:
 
       - name: Run SonarQube Analysis
         run: |
-          mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.host.url=${{ secrets.SONAR_URL }} \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
