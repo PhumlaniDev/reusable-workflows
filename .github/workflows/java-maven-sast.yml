@@ -111,19 +111,23 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history for accurate analysis
 
-      - name: Download Maven Target
-        uses: actions/download-artifact@v7
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
         with:
-          name: maven-target
-          path: target
+          distribution: temurin
+          java-version: 21
+          cache: maven  # This caches ~/.m2/repository automatically!
 
-      - name: Run SpotBugs
-#        if: inputs.scan_tool == 'spotbugs'
-        uses: jmservera/spotbugs-github-action@v0.1.0-alpha
+      - name: Build with Maven
+        run: mvn -B clean package -DskipTests
+
+      - name: Run SpotBugs with FindSecBugs
+        uses: advanced-security/spotbugs-findsecbugs-action@45266478cb8627da923977dacd1fa413fdb616a5
         with:
-          target: ./target
-          dependenciesPath: ~/.m2
-          basePath: src/main/java
+          target: ./target/classes
+          ram: 4096
+          format: sarif
+          output: spotbugs.sarif
 
   semgrep:
     runs-on: ubuntu-latest
