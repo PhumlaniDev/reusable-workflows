@@ -12,11 +12,11 @@ on:
         required: true
       SONAR_ORGANIZATION:
         required: true
-    inputs:
-      scan_tool:
-        description: "The static analysis tool to run (codeql, sonar, spotbugs, semgrep)"
-        required: true
-        type: string
+#    inputs:
+#      scan_tool:
+#        description: "The static analysis tool to run (codeql, sonar, spotbugs, semgrep)"
+#        required: true
+#        type: string
 
 permissions:
   actions: read
@@ -51,7 +51,7 @@ jobs:
           path: target
 
       - name: Perform CodeQL Analysis
-        if: inputs.scan_tool == 'codeql'
+#        if: inputs.scan_tool == 'codeql'
         uses: github/codeql-action/analyze@v4
 
   sonar:
@@ -90,7 +90,7 @@ jobs:
           path: target
 
       - name: Run SonarQube Analysis
-        if: inputs.scan_tool == 'sonar'
+#        if: inputs.scan_tool == 'sonar'
         run: |
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
@@ -113,7 +113,7 @@ jobs:
           path: target
 
       - name: Run SpotBugs
-        if: inputs.scan_tool == 'spotbugs'
+#        if: inputs.scan_tool == 'spotbugs'
         uses: jmservera/spotbugs-github-action@v0.1.0-alpha
         with:
           target: ./target
@@ -131,7 +131,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for accurate analysis
 
       - name: Run Semgrep
-        if: inputs.scan_tool == 'semgrep'
+#        if: inputs.scan_tool == 'semgrep'
         run: semgrep ci -v -o results.sarif --sarif || true
         env:
           SEMGREP_RULES: p/security-audit p/owasp-top-ten
