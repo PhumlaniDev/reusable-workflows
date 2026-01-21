@@ -43,12 +43,17 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: java
+          queries: security-and-quality
 
-      - name: Download Maven Target
-        uses: actions/download-artifact@v7
-        with:
-          name: maven-target
-          path: target
+      - name: Build with Maven
+        run: |
+          mvn -B clean package -DskipTests
+
+#      - name: Download Maven Target
+#        uses: actions/download-artifact@v7
+#        with:
+#          name: maven-target
+#          path: target
 
       - name: Perform CodeQL Analysis
 #        if: inputs.scan_tool == 'codeql'
