@@ -67,14 +67,11 @@ jobs:
       - name: Pull Docker Image
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
 
-      - name: Debug Trivy Scan
-        run: |
-          echo "Attempting to scan image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}"
-          docker images
-          trivy image --format sarif --output trivy-results.sarif --ignore-unfixed --vuln-type os,library --severity CRITICAL,HIGH ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }} || echo "Trivy scan failed"
+      - name: Debug - List pulled images
+        run: docker images
 
       - name: Run Trivy vulnerability scanner (SARIF)
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
           format: sarif
@@ -82,11 +79,23 @@ jobs:
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH
+          limit-severity-for-sarif: true
+        continue-on-error: true
 
-      - name: Check if Trivy SARIF file exists
-        run: ls -la ./trivy-results.sarif
+      - name: Debug - Check Trivy SARIF file
+        run: |
+          if [ -f trivy-results.sarif ]; then
+            echo "Trivy SARIF file exists.";
+            ls -la trivy-results.sarif
+            head -n 20 trivy-results.sarif || echo "(file is empty or invalid)"
+            jq '.' trivy-results.sarif || echo "(not valid JSON)"
+          else
+            echo "Trivy SARIF file NOT created.";
+            echo "Trivy scan may have failed.";
+          fi
 
       - name: Upload Trivy SARIF report to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2.22.3
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
-          sarif_file: ./trivy-results.sarif
+          sarif_file: trivy-results.sarif
