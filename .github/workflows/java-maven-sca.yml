@@ -31,17 +31,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Fetch all history for accurate analysis
 
       - name: Download Maven Target
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: maven-target
+          path: target
 
       - name: Install Snyk CLI
-        uses: snyk/actions/setup@v3
+        uses: snyk/actions/setup@master
 
       - name: Run Snyk to check for vulnerabilities
         run: snyk test --maven-aggregate-project

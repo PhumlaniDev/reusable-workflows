@@ -18,7 +18,7 @@ This workflow is triggered by:
 
 1. **Checkout Code**
 
-   - Uses the `actions/checkout@v4` action to check out the repository code.
+   - Uses the `actions/checkout@v6` action to check out the repository code.
    - Sets `fetch-depth` to `0` to ensure all history is available for the linter.
 
 2. **Lint Code**

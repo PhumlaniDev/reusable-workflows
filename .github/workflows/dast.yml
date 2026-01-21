@@ -63,7 +63,7 @@ jobs:
           cmd_options: '-a -j -l WARN -z "-addoninstallall" '
           allow_issue_writing: true
 #      - name: Checkout
-#        uses: actions/checkout@v4
+#        uses: actions/checkout@v6
 #        with:
 #          ref: develop
 #

@@ -6,7 +6,7 @@ The `setup` job is responsible for preparing the environment for the subsequent 
 
 ## Key Steps
 
-1. **Check out code**: Uses the `actions/checkout@v4` action to pull the latest code from the repository.
+1. **Check out code**: Uses the `actions/checkout@v6` action to pull the latest code from the repository.
 2. **Set up Java**: Configures the environment to use Java 17 (Zulu distribution).
 3. **Cache Maven dependencies**: Caches the `.m2` Maven repository to avoid downloading dependencies repeatedly across jobs.
 
