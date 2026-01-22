@@ -122,9 +122,11 @@ jobs:
         run: mvn -B clean package -DskipTests
 
       - name: Run SpotBugs with FindSecBugs
-        uses: advanced-security/spotbugs-findsecbugs-action@1
+        uses: jmservera/spotbugs-github-action@v0.1.0-alpha
         with:
-          target: ./target/classes
+          target: ./target
+          dependenciesPath: ~/.m2
+          basePath: src/main/java
           ram: 4096
           format: sarif
           output: spotbugs.sarif
