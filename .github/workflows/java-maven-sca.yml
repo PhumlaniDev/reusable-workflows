@@ -50,13 +50,13 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: Check if Snyk SARIF file exists
-        run: ls -la ./snyk.sarif
-
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: ./snyk.sarif
+
+      - name: Check if Snyk SARIF file exists
+        run: ls -la ./snyk.sarif
 
   vulnerability_scan:
     runs-on: ubuntu-latest
