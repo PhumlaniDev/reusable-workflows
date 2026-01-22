@@ -45,18 +45,17 @@ jobs:
         uses: snyk/actions/setup@master
 
       - name: Run Snyk to check for vulnerabilities
-        run: snyk test --maven-aggregate-project
+        uses: snyk/actions/maven@master
         continue-on-error: true # To make sure that SARIF upload gets called
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=snyk.sarif
 
       - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ./snyk.sarif
-
-      - name: Check if Snyk SARIF file exists
-        run: ls -la ./snyk.sarif
+          sarif_file: snyk.sarif
 
   vulnerability_scan:
     runs-on: ubuntu-latest
