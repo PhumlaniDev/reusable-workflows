@@ -122,7 +122,7 @@ jobs:
         run: mvn -B clean package -DskipTests
 
       - name: Run SpotBugs with FindSecBugs
-        uses: advanced-security/spotbugs-findsecbugs-action@45266478cb8627da923977dacd1fa413fdb616a5
+        uses: advanced-security/spotbugs-findsecbugs-action@1
         with:
           target: ./target/classes
           ram: 4096
