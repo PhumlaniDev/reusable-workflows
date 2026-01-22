@@ -129,6 +129,12 @@ jobs:
           format: sarif
           output: spotbugs.sarif
 
+      - name: Upload SpotBugs SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4  # Use v4 (current major)
+        with:
+          sarif_file: spotbugs.sarif
+
   semgrep:
     runs-on: ubuntu-latest
     container:
