@@ -130,6 +130,9 @@ jobs:
           ram: 4096
           format: sarif
           output: spotbugs.sarif
+          effort: max
+          confidence: high
+          plugins: findsecbugs
 
       - name: Upload SpotBugs SARIF
         if: always()
