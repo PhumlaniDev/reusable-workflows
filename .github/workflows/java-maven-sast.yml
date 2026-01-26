@@ -124,7 +124,7 @@ jobs:
       - name: Run SpotBugs with FindSecBugs
         uses: jmservera/spotbugs-github-action@v0.1.0-alpha
         with:
-          target: ./target
+          target: ./target/classes
           dependenciesPath: ~/.m2
           basePath: src/main/java
           ram: 4096
@@ -133,6 +133,7 @@ jobs:
           effort: max
           confidence: high
           plugins: findsecbugs
+          filter: spotbugs-filter.xml
 
       - name: Upload SpotBugs SARIF
         if: always()
