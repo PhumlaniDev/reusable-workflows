@@ -70,7 +70,7 @@ jobs:
         run: docker images
 
       - name: Run Trivy vulnerability scanner (SARIF)
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.34.2
         with:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.project_name }}:${{ github.run_number }}
           format: sarif
@@ -78,7 +78,8 @@ jobs:
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH
-          limit-severity-for-sarif: true
+          # limit-severity-for-sarif: true
+          exit-code: '0'
         continue-on-error: true
 
       - name: Debug - Check Trivy SARIF file
@@ -95,6 +96,6 @@ jobs:
 
       - name: Upload Trivy SARIF report to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        if: always() && hasFiles('trivy-results.sarif') != ''
         with:
           sarif_file: trivy-results.sarif
