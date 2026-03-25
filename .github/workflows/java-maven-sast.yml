@@ -49,14 +49,14 @@ jobs:
         run: |
           mvn -B clean package -DskipTests
 
-#      - name: Download Maven Target
-#        uses: actions/download-artifact@v7
-#        with:
-#          name: maven-target
-#          path: target
+      #      - name: Download Maven Target
+      #        uses: actions/download-artifact@v7
+      #        with:
+      #          name: maven-target
+      #          path: target
 
       - name: Perform CodeQL Analysis
-#        if: inputs.scan_tool == 'codeql'
+        #        if: inputs.scan_tool == 'codeql'
         uses: github/codeql-action/analyze@v4
 
   sonar:
@@ -95,9 +95,9 @@ jobs:
           path: target
 
       - name: Run SonarQube Analysis
-#        if: inputs.scan_tool == 'sonar'
+        #        if: inputs.scan_tool == 'sonar'
         run: |
-          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.host.url=${{ secrets.SONAR_URL }} \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
@@ -116,7 +116,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-          cache: maven  # This caches ~/.m2/repository automatically!
+          cache: maven # This caches ~/.m2/repository automatically!
 
       - name: Build with Maven
         run: mvn -B clean package -DskipTests
@@ -137,7 +137,7 @@ jobs:
 
       - name: Upload SpotBugs SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v4  # Use v4 (current major)
+        uses: github/codeql-action/upload-sarif@v4 # Use v4 (current major)
         with:
           sarif_file: spotbugs.sarif
 
@@ -152,7 +152,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for accurate analysis
 
       - name: Run Semgrep
-#        if: inputs.scan_tool == 'semgrep'
+        #        if: inputs.scan_tool == 'semgrep'
         run: semgrep ci -v -o results.sarif --sarif || true
         env:
           SEMGREP_RULES: p/security-audit p/owasp-top-ten
