@@ -43,22 +43,23 @@ jobs:
           java-version: "21"
           cache: "maven"
 
-      - name: Pre-fetch Dependencies
-        run: mvn --batch-mode dependency:go-offline
-
-      - name: Cache Maven Repo
-        uses: actions/cache@v5
-        with:
-          path: ~/.m2/repository
-          key: maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: maven-
-
       - name: Setup Maven settings.xml from secret
         run: |
           mkdir -p ~/.m2
           cat <<'EOF' > ~/.m2/settings.xml
           ${{ secrets.MAVEN_SETTINGS_XML }}
           EOF
+
+      - name: Cache Maven Repo
+        uses: actions/cache@v5
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-
+
+      - name: Pre-fetch Dependencies
+        run: mvn --batch-mode org.apache.maven.plugins:maven-dependency-plugin:3.11.0:go-offline
 
       - name: Build & Run Tests
         run: mvn --batch-mode clean verify -Pcoverage -Dspring.profiles.active=test
