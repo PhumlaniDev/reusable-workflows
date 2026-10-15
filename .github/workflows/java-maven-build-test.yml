@@ -56,10 +56,7 @@ jobs:
           path: ~/.m2/repository
           key: maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            maven-
-
-      - name: Pre-fetch Dependencies
-        run: mvn --batch-mode org.apache.maven.plugins:maven-dependency-plugin:3.11.0:go-offline
+            maven
 
       - name: Build & Run Tests
         run: mvn --batch-mode clean verify -Pcoverage -Dspring.profiles.active=test
