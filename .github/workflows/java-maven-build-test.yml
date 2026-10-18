@@ -1,71 +1,162 @@
 ---
-name: Build, Test and Analyze Workflow
+name: Java Maven Build and Test
 
-permissions:
-  contents: read
-  actions: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   workflow_call:
+    inputs:
+      java-version:
+        description: JDK version
+        type: string
+        default: "21"
+      working-directory:
+        description: Directory containing the pom.xml
+        type: string
+        default: "."
+      maven-args:
+        description: Extra arguments appended to the mvn command
+        type: string
+        default: "-Pcoverage"
+      spring-profile:
+        description: Spring profile used while running tests
+        type: string
+        default: "test"
+      postgres-db:
+        description: Database created in the Postgres service container (match your test profile)
+        type: string
+        default: "postgres"
+      postgres-version:
+        description: Postgres image tag
+        type: string
+        default: "16"
+      timeout-minutes:
+        type: number
+        default: 30
     secrets:
       MAVEN_SETTINGS_XML:
         required: true
       JASYPT_ENCRYPTOR_PASSWORD:
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
     services:
       postgres:
-        image: postgres:16
+        image: postgres:${{ inputs.postgres-version }}
         ports:
           - 5432:5432
         env:
-          POSTGRES_DB: inventory_db
+          POSTGRES_DB: ${{ inputs.postgres-db }}
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         options: >-
-          --health-cmd "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
-          --health-interval 10s
+          --health-cmd "pg_isready -U postgres -d ${{ inputs.postgres-db }}"
+          --health-interval 5s
           --health-timeout 5s
-          --health-retries 5
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+          --health-retries 10
 
-      - name: Set up JDK 21
+    env:
+      # Retry transient network failures and drop pooled connections before
+      # a proxy/tunnel can close them (Maven 3.9+ native transport).
+      MAVEN_OPTS: >-
+        -Daether.connector.http.retryHandler.count=5
+        -Daether.connector.http.retryHandler.requestSentEnabled=true
+        -Daether.connector.http.connectionMaxTtl=25
+        -Dmaven.wagon.http.retryHandler.count=5
+      MAVEN_CLI_OPTS: --batch-mode --no-transfer-progress --errors
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          distribution: "temurin"
-          java-version: "21"
-          cache: "maven"
-          cache-dependency-path: "**/pom.xml"
+          distribution: temurin
+          java-version: ${{ inputs.java-version }}
+          # Caching is handled explicitly below so it also saves on failed runs.
 
-      - name: Setup Maven settings.xml from secret
+      - name: Write Maven settings.xml
+        working-directory: ${{ github.workspace }}
+        env:
+          MAVEN_SETTINGS_XML: ${{ secrets.MAVEN_SETTINGS_XML }}
         run: |
           mkdir -p ~/.m2
-          cat <<'EOF' > ~/.m2/settings.xml
-          ${{ secrets.MAVEN_SETTINGS_XML }}
-          EOF
+          printf '%s' "$MAVEN_SETTINGS_XML" > ~/.m2/settings.xml
+          chmod 600 ~/.m2/settings.xml
 
-      - name: Cache Maven Repo
-        uses: actions/cache@v5
+      - name: Restore Maven cache
+        id: m2-cache
+        uses: actions/cache/restore@v5
         with:
           path: ~/.m2/repository
-          key: maven-${{ hashFiles('**/pom.xml') }}
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            maven
+            maven-${{ runner.os }}-
 
-      - name: Build & Run Tests
-        run: mvn --batch-mode clean verify -Pcoverage -Dspring.profiles.active=test
+      - name: Build and test
         env:
           JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
+          SPRING_PROFILES_ACTIVE: ${{ inputs.spring-profile }}
+        run: >-
+          mvn $MAVEN_CLI_OPTS clean verify
+          -Dsurefire.trimStackTrace=false
+          ${{ inputs.maven-args }}
 
-      - name: Upload Maven Target
+      - name: Show failing test output
+        if: failure()
+        run: |
+          shopt -s nullglob
+          for f in target/surefire-reports/*.txt target/failsafe-reports/*.txt; do
+            if grep -qE "FAILURE|ERROR" "$f"; then
+              echo "::group::$f"
+              cat "$f"
+              echo "::endgroup::"
+            fi
+          done
+
+      - name: Remove failed-download markers
+        if: always()
+        working-directory: ${{ github.workspace }}
+        run: find ~/.m2/repository -name '*.lastUpdated' -delete 2>/dev/null || true
+
+      - name: Save Maven cache
+        # Saves even when tests fail, so a flaky download makes progress each retry.
+        if: always() && steps.m2-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+
+      - name: Upload test and coverage reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-reports
+          path: |
+            ${{ inputs.working-directory }}/target/surefire-reports
+            ${{ inputs.working-directory }}/target/failsafe-reports
+            ${{ inputs.working-directory }}/target/site/jacoco
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload Maven target
         uses: actions/upload-artifact@v6
         with:
           name: maven-target
-          path: target
+          path: ${{ inputs.working-directory }}/target
+          if-no-files-found: error
+          retention-days: 3
