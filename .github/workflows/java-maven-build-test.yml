@@ -112,7 +112,8 @@ jobs:
           JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
           SPRING_PROFILES_ACTIVE: ${{ inputs.spring-profile }}
         run: >-
-          mvn $MAVEN_CLI_OPTS clean verify
+          mvn ${MAVEN_CLI_OPTS:+$MAVEN_CLI_OPTS} 
+          clean verify
           -Dsurefire.trimStackTrace=false
           ${{ inputs.maven-args }}
 
