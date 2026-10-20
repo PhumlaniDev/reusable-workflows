@@ -1,14 +1,11 @@
+---
 name: Discord Notification
-
-permissions:
-  contents: read
-  pull-requests: read
-  actions: read
 
 on:
   workflow_call:
     inputs:
       status:
+        description: success, failure or cancelled. Picks the embed colour when no colour is given.
         required: true
         type: string
       title:
@@ -18,38 +15,64 @@ on:
         required: true
         type: string
       color:
+        description: Decimal embed colour. Leave empty to derive it from status.
         required: false
         type: string
-        default: '7506394' # Blue
+        default: ""
     secrets:
       DISCORD_WEBHOOK:
         required: true
 
+permissions: {}
+
 jobs:
   send-notification:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     env:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      DISCORD_STATUS: ${{ inputs.status }}
       DISCORD_TITLE: ${{ inputs.title }}
       DISCORD_DESCRIPTION: ${{ inputs.description }}
       DISCORD_COLOR: ${{ inputs.color }}
+      REPOSITORY: ${{ github.repository }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - name: Send Discord Notification with Embed
+      - name: Send Discord notification
         run: |
-          jq -n \
-            --arg username "GitHub Actions" \
+          set -euo pipefail
+
+          color="$DISCORD_COLOR"
+          if [ -z "$color" ]; then
+            case "$DISCORD_STATUS" in
+              success)   color=3066993 ;;   # green
+              failure)   color=15158332 ;;  # red
+              cancelled) color=9807270 ;;   # grey
+              *)         color=7506394 ;;   # blue
+            esac
+          fi
+
+          # Discord limits: title 256 chars, description 4096 chars.
+          payload=$(jq -n \
             --arg title "$DISCORD_TITLE" \
             --arg description "$DISCORD_DESCRIPTION" \
-            --arg color "$DISCORD_COLOR" \
-            --arg repo "${{ github.repository }}" \
-            --arg timestamp "$(date --utc +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg color "$color" \
+            --arg repo "$REPOSITORY" \
+            --arg url "$RUN_URL" \
             '{
-              username: $username,
+              username: "GitHub Actions",
               embeds: [{
-                title: $title,
-                description: $description,
+                title: ($title | .[0:256]),
+                url: $url,
+                description: ($description | .[0:4096]),
                 color: ($color | tonumber),
                 footer: { text: "Repository: \($repo)" },
-                timestamp: $timestamp
+                timestamp: (now | floor | todate)
               }]
-            }' | curl -H "Content-Type: application/json" -X POST -d @- "$DISCORD_WEBHOOK"
+            }')
+
+          curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-delay 2 --retry-all-errors \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$DISCORD_WEBHOOK"
