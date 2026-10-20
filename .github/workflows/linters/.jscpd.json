@@ -1,0 +1,5 @@
+{
+  "threshold": 0,
+  "ignore": ["**/.github/workflows/**"],
+  "absolute": true
+}
