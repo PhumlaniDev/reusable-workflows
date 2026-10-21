@@ -1,10 +1,6 @@
 ---
 name: Java Maven Build and Test
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
   workflow_call:
     inputs:
